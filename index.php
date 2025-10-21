@@ -35,7 +35,7 @@ $result = $conn->query("SELECT * FROM students");
 $top_students = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC LIMIT 3");
 $ranking = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC");
 $avg_result = $conn->query("SELECT AVG(hours) AS avg_hours FROM students");
-$avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
+$above_avg_students = $conn->query("SELECT * FROM students WHERE hours > (SELECT AVG(hours) FROM students)");
 ?>
 
 <!DOCTYPE html>
@@ -188,4 +188,5 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
