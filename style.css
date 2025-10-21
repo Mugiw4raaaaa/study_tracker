@@ -1,0 +1,40 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h3 {
+    font-family: 'Arial Black', sans-serif;
+}
+
+h1 {
+    font-size: 3rem;
+}
+
+header h1 {
+    letter-spacing: 2px;
+}
+
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.list-group-item {
+    font-size: 0.9rem;
+}
+
+.badge {
+    font-size: 0.8rem;
+}
+
+@media(max-width: 992px) {
+    /* Adjust font sizes for smaller screens */
+    h1 {
+        font-size: 2rem;
+    }
+}
