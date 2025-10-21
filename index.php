@@ -2,7 +2,7 @@
 // Connect to database
 $conn = new mysqli('localhost', 'root', '', 'study_hours');
 
-// Handle form submissions
+// Handle form submissions for adding and updating students
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add'])) {
         $name = $_POST['name'];
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Handle delete
+// Handle delete request
 if (isset($_GET['delete'])) {
     $id_to_delete = $_GET['delete'];
     $conn->query("DELETE FROM students WHERE id=$id_to_delete");
@@ -31,7 +31,7 @@ if (isset($_GET['delete'])) {
 // Fetch all students
 $result = $conn->query("SELECT * FROM students");
 
-// Insights with SQL subqueries
+// Fetch insights
 $top_students = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC LIMIT 3");
 $ranking = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC");
 $avg_result = $conn->query("SELECT AVG(hours) AS avg_hours FROM students");
@@ -46,11 +46,15 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
 <title>Student Study Hours Tracker</title>
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 <!-- Custom CSS -->
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div class="container my-5">
+
+    <!-- Header -->
     <header class="text-center mb-5">
         <h1 class="display-4 text-success fw-bold">Student Study Hours Tracker</h1>
         <p class="lead text-muted">by Cedrick Opulencia</p>
@@ -112,8 +116,9 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
                                 <button class="btn btn-primary btn-sm me-2" type="submit" name="update" title="Update">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <a href="?delete=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"
-                                   title="Delete"><i class="bi bi-trash"></i></a>
+                                <a href="?delete=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             </td>
                         </form>
                     </tr>
@@ -123,10 +128,11 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
         </div>
     </section>
 
-    <!-- Insights Dashboard -->
+    <!-- Insights & Rankings Dashboard -->
     <section>
         <h3 class="text-center mb-4 text-secondary">Insights & Rankings</h3>
         <div class="row g-4">
+
             <!-- Top 3 Students -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0 rounded-3 bg-light">
@@ -138,14 +144,15 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <?= htmlspecialchars($student['name']) ?>
                             <span class="badge bg-primary rounded-pill"><?= $student['hours'] ?> hrs</span>
-                        <?php if($student['subject']): ?>
+                            <?php if($student['subject']): ?>
                             <br><small class="text-muted">Subject: <?= htmlspecialchars($student['subject']) ?></small>
-                        <?php endif; ?>
+                            <?php endif; ?>
                         </li>
                         <?php endwhile; ?>
                     </ul>
                 </div>
             </div>
+
             <!-- Overall Ranking -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0 rounded-3 bg-light">
@@ -154,7 +161,7 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
                     </div>
                     <ul class="list-group list-group-flush p-3" style="max-height: 200px; overflow-y: auto;">
                         <?php
-                        $ranking->data_seek(0);
+                        $ranking->data_seek(0); // reset pointer
                         while($student = $ranking->fetch_assoc()): ?>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <?= htmlspecialchars($student['name']) ?>
@@ -165,21 +172,20 @@ $avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
                     </ul>
                 </div>
             </div>
-            <!-- Average Hours -->
+
+            <!-- Average Study Hours -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0 rounded-3 bg-light d-flex flex-column justify-content-center align-items-center p-4">
                     <h5 class="mb-3 text-info">Average Study Hours</h5>
                     <p class="display-4 text-success"><?= round($avg_hours, 2) ?> hrs</p>
                 </div>
             </div>
+
         </div>
     </section>
 </div>
 
-<!-- Bootstrap JS & Icons (Optional for icons) -->
+<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
 </body>
 </html>
