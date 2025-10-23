@@ -1,6 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Connect to database
-$conn = new mysqli('localhost', 'root', '', 'study_hours');
+include 'connection.php';
 
 // Handle form submissions for adding and updating students
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,10 +34,21 @@ if (isset($_GET['delete'])) {
 $result = $conn->query("SELECT * FROM students");
 
 // Fetch insights
-$top_students = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC LIMIT 3");
-$ranking = $conn->query("SELECT name, subject, hours FROM students ORDER BY hours DESC");
+$top_students = $conn->query("
+    SELECT 
+        s.id,
+        s.name,
+        s.subject,
+        s.hours,
+        (SELECT SUM(hours) FROM students s2 WHERE s2.subject = s.subject) AS total_subject_hours
+    FROM students s
+    ORDER BY s.hours DESC
+    LIMIT 3
+");
+$ranking = $conn->query("SELECT * FROM students ORDER BY hours DESC");
 $avg_result = $conn->query("SELECT AVG(hours) AS avg_hours FROM students");
-$above_avg_students = $conn->query("SELECT * FROM students WHERE hours > (SELECT AVG(hours) FROM students)");
+$avg_hours = $avg_result->fetch_assoc()['avg_hours'] ?? 0;
+
 ?>
 
 <!DOCTYPE html>
@@ -133,7 +146,7 @@ $above_avg_students = $conn->query("SELECT * FROM students WHERE hours > (SELECT
         <h3 class="text-center mb-4 text-secondary">Insights & Rankings</h3>
         <div class="row g-4">
 
-            <!-- Top 3 Students -->
+            <!-- Top 3 Students with total hours in subject via subquery -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0 rounded-3 bg-light">
                     <div class="card-header bg-primary text-white text-center rounded-top">
@@ -141,12 +154,15 @@ $above_avg_students = $conn->query("SELECT * FROM students WHERE hours > (SELECT
                     </div>
                     <ul class="list-group list-group-flush p-3" style="max-height: 200px; overflow-y: auto;">
                         <?php while($student = $top_students->fetch_assoc()): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <?= htmlspecialchars($student['name']) ?>
-                            <span class="badge bg-primary rounded-pill"><?= $student['hours'] ?> hrs</span>
-                            <?php if($student['subject']): ?>
-                            <br><small class="text-muted">Subject: <?= htmlspecialchars($student['subject']) ?></small>
-                            <?php endif; ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center flex-column">
+                            <div class="d-flex justify-content-between w-100 align-items-center">
+                                <div>
+                                    <?= htmlspecialchars($student['name']) ?>
+                                </div>
+                                <span class="badge bg-primary rounded-pill"><?= $student['hours'] ?> hrs</span>
+                            </div>
+                            <small class="text-muted">Subject: <?= htmlspecialchars($student['subject']) ?></small>
+                            <small class="text-muted">Total hours in subject: <?= $student['total_subject_hours'] ?> hrs</small>
                         </li>
                         <?php endwhile; ?>
                     </ul>
@@ -188,5 +204,4 @@ $above_avg_students = $conn->query("SELECT * FROM students WHERE hours > (SELECT
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
